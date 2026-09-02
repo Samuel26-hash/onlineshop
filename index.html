@@ -173,10 +173,47 @@ cartItems.addEventListener("click", e => { if (e.target.matches(".cart-item-remo
 cartToggle.addEventListener("click", openCart);
 cartClose.addEventListener("click", closeCart);
 cartBackdrop.addEventListener("click", closeCart);
-checkoutBtn.addEventListener("click", () => {
-  if (cart.length === 0){ alert("Dein Warenkorb ist leer."); return; }
-  alert("Demo: Hier würde der echte Checkout starten (z.B. über Stripe).");
+
+// --- HIER ERSETZT: Asynchroner Checkout-Call ---
+checkoutBtn.addEventListener("click", async () => {
+  if (cart.length === 0) {
+    alert("Dein Warenkorb ist leer.");
+    return;
+  }
+
+  // Button deaktivieren, um Mehrfach-Klicks zu verhindern
+  checkoutBtn.disabled = true;
+  const originalText = checkoutBtn.textContent;
+  checkoutBtn.textContent = "Wird geladen...";
+
+  try {
+    const response = await fetch("/.netlify/functions/create-checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      // Wir senden nur die Produkt-ID und Stückzahl (qty) an das Backend
+      body: JSON.stringify({
+        items: cart.map(item => ({ id: item.id, qty: item.qty }))
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Fehler beim Erstellen der Zahlung: " + (data.error || "Unbekannter Fehler"));
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = originalText;
+    }
+  } catch (err) {
+    alert("Fehler: " + err.message);
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = originalText;
+  }
 });
+
 renderProducts(); renderCart();
 </script>
 </body>
