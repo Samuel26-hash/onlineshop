@@ -35,7 +35,7 @@ body{
 .hero h1{ font-size:44px; line-height:1.15; margin:0 0 20px; font-weight:500; }
 .hero-sub{ font-size:18px; color:var(--stone); max-width:38ch; margin:0 0 28px; }
 .hero-figure{ aspect-ratio:4/5; border-radius:var(--radius); background: radial-gradient(ellipse at 35% 30%, #d8c3a8 0%, transparent 55%), linear-gradient(160deg, var(--clay) 0%, var(--clay-dark) 100%); }
-.btn-primary{ display:inline-block; background:var(--clay); color:#fff; font-family:inherit; font-size:16px; text-decoration:none; border:none; border-radius:var(--radius); padding:13px 24px; cursor:pointer; }
+.btn-primary{ display:inline-block; background:var(--clay); color:#fff; font-family:inherit; font-size:16px; text-decoration:none; border:none; border-radius:var(--radius); padding:13px 24px; cursor:pointer; text-align:center; }
 .btn-primary:hover{ background:var(--clay-dark); }
 .btn-block{ width:100%; }
 .section-title{ font-size:22px; font-weight:500; margin:64px 0 28px; }
@@ -98,7 +98,7 @@ body{
 </main>
 
 <footer class="site-footer">
-  <div class="wrap"><p>Atelier Nord · Demo-Vorlage, erstellt mit Claude · Kein echter Zahlungsvorgang</p></div>
+  <div class="wrap"><p>Atelier Nord · Demo-Vorlage · Zahlungsabwicklung via Stripe</p></div>
 </footer>
 
 <aside class="cart-drawer" id="cartDrawer">
@@ -110,7 +110,7 @@ body{
   <div class="cart-footer">
     <div class="cart-total-row"><span>Summe</span><span id="cartTotal">CHF 0.00</span></div>
     <button class="btn-primary btn-block" id="checkoutBtn">Zur Kasse</button>
-    <p class="cart-note">Demo — hier würde später Stripe/TWINT eingebunden.</p>
+    <p class="cart-note">Sichere Bezahlung über Stripe.</p>
   </div>
 </aside>
 <div class="cart-backdrop" id="cartBackdrop"></div>
@@ -174,44 +174,15 @@ cartToggle.addEventListener("click", openCart);
 cartClose.addEventListener("click", closeCart);
 cartBackdrop.addEventListener("click", closeCart);
 
-// --- HIER ERSETZT: Asynchroner Checkout-Call ---
-checkoutBtn.addEventListener("click", async () => {
+// --- DIREKTE STRIPE PAYMENT LINK WEITERLEITUNG ---
+checkoutBtn.addEventListener("click", () => {
   if (cart.length === 0) {
     alert("Dein Warenkorb ist leer.");
     return;
   }
-
-  // Button deaktivieren, um Mehrfach-Klicks zu verhindern
-  checkoutBtn.disabled = true;
-  const originalText = checkoutBtn.textContent;
-  checkoutBtn.textContent = "Wird geladen...";
-
-  try {
-    const response = await fetch("/.netlify/functions/create-checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      // Wir senden nur die Produkt-ID und Stückzahl (qty) an das Backend
-      body: JSON.stringify({
-        items: cart.map(item => ({ id: item.id, qty: item.qty }))
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.url) {
-      window.location.href = data.url;
-    } else {
-      alert("Fehler beim Erstellen der Zahlung: " + (data.error || "Unbekannter Fehler"));
-      checkoutBtn.disabled = false;
-      checkoutBtn.textContent = originalText;
-    }
-  } catch (err) {
-    alert("Fehler: " + err.message);
-    checkoutBtn.disabled = false;
-    checkoutBtn.textContent = originalText;
-  }
+  
+  // Weiterleitung auf deinen Stripe Payment Link
+  window.location.href = "https://buy.stripe.com/test_dRmfZjaaF8TV3aucPV8IU00";
 });
 
 renderProducts(); renderCart();
